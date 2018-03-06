@@ -1,0 +1,54 @@
+SQL Server has a PIVOT relational operator to turn the unique values of a specified column from multiple rows into multiple column values in the output (cross-tab), effectively rotating a table. It also allows performing aggregations, wherever required, for column values that are expected in the final output. The basic syntax for a PIVOT relational operator looks like this:
+
+SELECT <<ColumnNames>> 
+FROM <<TableName>> 
+PIVOT
+ (
+   AggregateFunction(<<ColumnToBeAggregated>>)
+   FOR PivotColumn IN (<<PivotColumnValues>>)
+ ) AS <<Alias>> 
+ 
+ 
+ 
+Example:
+https://www.codeproject.com/Tips/500811/Simple-Way-To-Use-Pivot-In-SQL-Query
+Let us have a table name Invoice which has three properties, InvoiceNumber, InvoiceDate, InvoiceAmount. 
+Suppose we have several rows input in the table. 
+Our goal is to display the sum of InvoiceAmount each month.
+
+
+SELECT * FROM 
+(
+  SELECT year(invoiceDate) as [year], 
+         left(datename(month,invoicedate),3)as [month], 
+         InvoiceAmount as Amount FROM Invoice
+) as InvoiceResult 
+
+it will give something like this
+year month amount
+2011 Janu  100.00
+2011 Febr  40.00
+2011 Marc  60.00
+2011 Marc  15.00
+...
+2012 Marc   56.00
+
+
+SELECT *
+FROM (
+    SELECT 
+        year(invoiceDate) as [year],left(datename(month,invoicedate),3)as [month], 
+        InvoiceAmount as Amount 
+    FROM Invoice
+) as s
+PIVOT
+(
+    SUM(Amount)
+    FOR [month] IN (jan, feb, mar, apr, 
+    may, jun, jul, aug, sep, oct, nov, dec)
+)AS pvt
+
+It will return something like this
+year  jan      feb ... dec
+2011  100.00   40.00   6.00
+2012  34.00    24.00   17.00
